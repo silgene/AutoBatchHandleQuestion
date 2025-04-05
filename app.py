@@ -82,16 +82,16 @@ def process_excel(file, system_prompt, user_prompt, model):
                    # answer = process_question(system_prompt, user_prompt, row['问题'], model)
                     futures.append(task)
 
-                for future in concurrent.futures.as_completed(futures):
-                    answer=future.result()
+                for index,future in enumerate(concurrent.futures.as_completed(futures)):
+                    question,answer=future.result()
 
 
                     pattern = r'<think>.*?</think>'
-                    question,answer=re.sub(pattern, "", answer,flags=re.DOTALL)
+                    answer=re.sub(pattern, "", answer,flags=re.DOTALL)
 
                     # 收集结果
                     results.append({
-                        '序号': row['序号'],
+                        '序号': index+1,
                         '系统提示词':system_prompt,
                         '提示词':user_prompt,
                         '问题': question,
@@ -184,6 +184,12 @@ if __name__ == "__main__":
             }
 
 
+        def stop_toggle_buttons():
+            return {
+                process_btn: gr.update(visible=True),
+                stop_btn: gr.update(visible=False)
+            }
+
         process_btn.click(
             fn=toggle_buttons,
             outputs=[process_btn, stop_btn]
@@ -191,13 +197,16 @@ if __name__ == "__main__":
             fn=process_excel,
             inputs=[file_input, system_input, prompt_input, model_select],
             outputs=[status_output, result_output, download_output]
+        ).then(
+            fn=stop_toggle_buttons,
+            outputs=[process_btn,stop_btn]
         )
 
         stop_btn.click(
             fn=stop_processing,
             outputs=status_output
         ).then(
-            fn=lambda: {process_btn: True, stop_btn: False},
+            fn=stop_toggle_buttons,
             outputs=[process_btn, stop_btn]
         )
 
@@ -205,5 +214,6 @@ if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
         server_port=7864,
-        show_error=True
+        show_error=True,
+       # root_path="/autoBatch"
     )
