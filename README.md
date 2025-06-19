@@ -21,14 +21,14 @@
 
 3.  **运行脚本**：
     ````bash
-    python main.py
+    python app.py
     ````
 
 ## 项目结构
 
 
 `````text
-├── main.py             # 主执行脚本
+├── app.py             # 主执行脚本
 ├── requirements.txt    # Python依赖包列表
 └── README.md           # 项目说明文档
 `````
